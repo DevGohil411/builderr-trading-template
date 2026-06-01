@@ -31,7 +31,7 @@ def _load(path: Path):
     return mod.decide
 
 
-def _synth_bars(days: int = 120, start: float = 100.0):
+def _synth_bars(days: int = 240, start: float = 100.0):
     bars, px = [], start * random.uniform(0.5, 3.0)
     for i in range(days):
         px *= 1 + random.uniform(-0.02, 0.02)

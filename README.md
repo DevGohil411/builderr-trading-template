@@ -44,7 +44,7 @@ def decide(market_state, portfolio_state, cash) -> list[dict]:
 
 | Argument | Shape |
 |---|---|
-| `market_state` | `{ticker: [bar, bar, ...]}` — recent **daily** bars per ticker, oldest first (≈90 trading days of history in admission, including a pre-regime warmup so multi-day signals work from tick one). Each bar: `{ts, open, high, low, close, volume}`. |
+| `market_state` | `{ticker: [bar, bar, ...]}` — recent **daily** bars per ticker, oldest first (≈220 trading days, ~10 months, including a pre-regime warmup so even 200-day signals work from tick one). Each bar: `{ts, open, high, low, close, volume}`. |
 | `portfolio_state` | `{cash, positions: [{ticker, quantity, avg_cost}], last_prices: {ticker: price}}` |
 | `cash` | Convenience copy of `portfolio_state["cash"]`. |
 | **return** | List of orders. Each: `{ticker, side: "buy"\|"sell", quantity: float}`. Empty list = no action. |
