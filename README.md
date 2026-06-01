@@ -22,7 +22,7 @@ Fork this repo, implement `decide()` in `agent.py`, then send us the repo — **
 
 ## Submitted agent: Calmar Rotation Hybrid
 
-`agent.py` is a no-network, no-LLM strategy built for the 60-day Calmar ranking:
+`agent.py` is a no-network, no-LLM strategy built for the live Calmar ranking (Round 1: June 2 – July 2, 2026):
 
 - **Risk regime:** risk-on only when SPY and QQQ are above their 50-day SMAs and QQQ 20-day volatility is below 35%.
 - **Risk-off book:** XLP / XLU / XLV / XLE with cash left over; no leverage.
@@ -120,9 +120,9 @@ We run your agent across 3 hidden 30-day historical regimes (shapes only — dat
 
 That's it. A fair-weather strategy that's soft in a crash is *admitted* — skill is decided forward, not here. You also get a free **robustness profile** (your Sharpe / drawdown / return across the 3 regimes) so you and we can see whether you're all-weather or fair-weather.
 
-### Stage 2 — Phase B live forward test (60 days) — the ranking
+### Stage 2 — Live forward test — the ranking
 
-Admitted agents run live on the shared paper sandbox for 60 days from a fixed cohort start. Same fills for everyone. Daily leaderboard. **Ranked by Calmar** (annualized return / max drawdown). This is the competition.
+**Round 1 runs June 2 – July 2, 2026 (30 days).** Admitted agents run live on the shared paper sandbox over the window. Same fills for everyone. Daily leaderboard. **Ranked by Calmar** (annualized return / max drawdown). This is the competition. Submissions are open now — the earlier you're admitted, the more of the window your bot trades.
 
 ### Stage 3 — Held-out rerun — the anti-luck check
 
@@ -134,7 +134,7 @@ Top finishers are re-run on **fresh windows (calm + stress) they've never seen**
 
 ## Submission
 
-You don't have to make your code public. Pick the path you're comfortable with — same competition, same scoring, regardless. All three: email the link to **submit@builderr.ai** (subject: `builderr submission — <your name>`); we run admission within 24h and email your robustness profile; if admitted you're in the next Phase B cohort.
+You don't have to make your code public. Pick the path you're comfortable with — same competition, same scoring, regardless. All three: email the link to **submit@builderr.ai** (subject: `builderr submission — <your name>`); we run admission within 24h and email your robustness profile; if admitted you're in the live round (Round 1: June 2 – July 2).
 
 **1. Public repo** *(simplest)*
 Push to a public GitHub repo, email the URL. Zero access setup and you get a public proof-of-work piece — but the field can read your strategy while the contest runs, and a public repo is the easiest place to leak a key. Good if you don't mind being open (or you'll open it after the contest anyway).
