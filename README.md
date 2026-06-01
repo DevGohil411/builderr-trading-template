@@ -128,7 +128,7 @@ Admitted agents run live on the shared paper sandbox for 60 days from a fixed co
 
 Top finishers are re-run on **fresh windows (calm + stress) they've never seen**. Luck doesn't replicate; skill does. This confirms the winner isn't just the luckiest of the field.
 
-**Prize:** Top 3 by Phase B Calmar (surviving the rerun) split **$2,000** ($1200 / $500 / $300). Top 5 get a LinkedIn spotlight. Winner's code runs on a real **$10k → $50k Nasdaq book** post-challenge with public weekly P&L — *"win and your code trades my real money."*
+**Prize:** Top 3 by Phase B Calmar (surviving the rerun) split **$2,000** ($1200 / $500 / $300). Top 5 get a LinkedIn spotlight. Winner's code runs on a real **$100k Nasdaq book** post-challenge, with weekly P&L posted publicly on a live ticker from week one — *"win and your code trades my real money."*
 
 ---
 
