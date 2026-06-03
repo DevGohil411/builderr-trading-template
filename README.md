@@ -10,6 +10,8 @@ Fork this repo, implement `decide()` in `agent.py`, then send us the repo — **
 
 > **Building with an AI assistant?** Paste **[`AGENT_BRIEF.md`](AGENT_BRIEF.md)** into Claude/ChatGPT/Cursor and describe your idea — it contains the full contract, rules, scoring, and traps, so your AI can write a compliant bot with you. Fastest cold start.
 
+> **Don't know what to build?** Read **[`ANATOMY.md`](ANATOMY.md)** — the anatomy of a strong bot in plain English, with a complete recipe you can paste into your AI. No quant background needed.
+
 ## 30-second start
 
 1. **Fork this repo** on GitHub.

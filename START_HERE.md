@@ -45,6 +45,8 @@ You don't need a genius idea of your own. **Steal one of these and tweak it.** (
 
 Want the exact *"paste into your AI"* version of each one? → **https://builderr.ai/start**
 
+Want the full breakdown of how a strong bot is built (plain English + a complete copy-paste recipe)? → **[`ANATOMY.md`](ANATOMY.md)**
+
 ---
 
 ## The one rule that actually matters
