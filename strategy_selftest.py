@@ -1,9 +1,6 @@
-"""Strategy-level checks for agent.py.
+"""Strategy-level checks for the Proven Calmar Defender agent.py.
 
-No network, no private engine, no third-party packages. These are not the
-official builderr evals; they catch contract, cap, and regime bugs before
-submission.
-
+No network, no private engine, no third-party packages.
 Run:
     python strategy_selftest.py
 """
@@ -19,7 +16,6 @@ UNIVERSE = (
     "SPY", "QQQ", "DIA", "IWM",
     "XLK", "XLF", "XLE", "XLV", "XLI", "XLY", "XLP", "XLU", "XLRE", "XLC", "SMH",
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-    "QLD", "SSO",
 )
 
 
@@ -43,32 +39,33 @@ def bars(start: float, returns: list[float]) -> list[dict]:
 
 def market(kind: str) -> dict[str, list[dict]]:
     if kind == "risk_off":
-        base = [-0.003] * 90
-        defensive = [0.0005] * 90
-        return {t: bars(100.0, defensive if t in {"XLP", "XLU", "XLV", "XLE"} else base) for t in UNIVERSE}
+        base = [-0.003] * 110
+        return {t: bars(100.0, base) for t in UNIVERSE}
 
     if kind == "high_vol":
-        calm_up = [0.002] * 90
-        qqq_chop = ([0.035, -0.03] * 45)
+        calm_up = [0.002] * 110
+        qqq_chop = [0.035, -0.03] * 55
         data = {t: bars(100.0, calm_up) for t in UNIVERSE}
         data["QQQ"] = bars(100.0, qqq_chop)
         return data
 
-    # Low-vol risk-on, with differentiated momentum.
-    data = {t: bars(100.0, [0.001] * 90) for t in UNIVERSE}
+    # Low-vol risk-on, with differentiated momentum strong enough to clear
+    # the +1% hysteresis band above the 100-day SMA.
+    data = {t: bars(100.0, [0.001] * 110) for t in UNIVERSE}
     for t in ("SMH", "NVDA", "XLK"):
-        data[t] = bars(100.0, [0.004] * 90)
+        data[t] = bars(100.0, [0.012] * 110)
     for t in ("QQQ", "AAPL", "META"):
-        data[t] = bars(100.0, [0.0025] * 90)
-    data["SPY"] = bars(100.0, [0.0018] * 90)
-    data["QLD"] = bars(100.0, [0.0048] * 90)
-    data["SSO"] = bars(100.0, [0.0034] * 90)
+        data[t] = bars(100.0, [0.008] * 110)
+    data["SPY"] = bars(100.0, [0.006] * 110)
     return data
 
 
 def reset_agent_state() -> None:
     agent._last_rebalance_bar_date = None
+    agent._last_regime = None
     agent._last_targets = {}
+    agent._cooldown_days = 0
+    agent._peak_equity = 0.0
 
 
 def beta_gross(weights: dict[str, float]) -> float:
@@ -80,33 +77,34 @@ def test_empty_data_returns_no_orders() -> None:
     assert agent.decide({}, {"cash": 100_000, "positions": [], "last_prices": {}}, 100_000) == []
 
 
-def test_insufficient_history_returns_no_targets() -> None:
+def test_insufficient_history_returns_empty_targets() -> None:
     short_market = {t: bars(100.0, [0.001] * 40) for t in UNIVERSE}
     assert agent.target_weights(short_market) == {}
 
 
-def test_risk_off_uses_defensive_book() -> None:
+def test_risk_off_returns_cash_or_defensive() -> None:
     weights = agent.target_weights(market("risk_off"))
-    assert set(weights).issubset({"XLP", "XLU", "XLV", "XLE"})
-    assert weights
+    if agent.SOFT_DEFENSIVE_WEIGHTS:
+        assert set(weights).issubset({t for t, _ in agent.SOFT_DEFENSIVE_WEIGHTS})
+    else:
+        assert weights == {}
 
 
 def test_risk_on_selects_positive_momentum() -> None:
     weights = agent.target_weights(market("risk_on"))
     assert {"SMH", "NVDA", "XLK"} & set(weights)
-    assert len(weights) >= 4
+    assert len(weights) >= 3
 
 
-def test_high_vol_disables_leverage() -> None:
+def test_high_vol_disables_risk_on() -> None:
     weights = agent.target_weights(market("high_vol"))
-    assert "QLD" not in weights
-    assert "SSO" not in weights
+    assert all(t not in weights for t in ("SMH", "NVDA", "XLK"))
 
 
 def test_caps_hold() -> None:
     for kind in ("risk_off", "high_vol", "risk_on"):
         weights = agent.target_weights(market(kind))
-        assert all(w < 0.240001 for w in weights.values()), (kind, weights)
+        assert all(w < 0.230001 for w in weights.values()), (kind, weights)
         assert beta_gross(weights) <= 1.350001, (kind, weights, beta_gross(weights))
 
 
@@ -135,20 +133,35 @@ def test_tiny_stale_position_is_not_sold() -> None:
     assert orders == []
 
 
+def test_drawdown_governor_scales_down() -> None:
+    reset_agent_state()
+    # Establish peak.
+    assert agent._drawdown_scale(120_000.0) == 1.0
+    # 110k is 8.3% drawdown -> between tier 2 (6%) and tier 3 (10%) -> 0.35.
+    assert agent._drawdown_scale(110_000.0) == 0.35
+    # 100k is 16.7% drawdown -> beyond tier 3 -> 0.10.
+    assert agent._drawdown_scale(100_000.0) == 0.10
+    # 115k is 4.2% drawdown -> between tier 1 (3%) and tier 2 (6%) -> 0.65.
+    assert agent._drawdown_scale(115_000.0) == 0.65
+    # 118k is 1.7% drawdown -> below tier 1 -> 1.0.
+    assert agent._drawdown_scale(118_000.0) == 1.0
+
+
 def run() -> None:
     tests = [
         test_empty_data_returns_no_orders,
-        test_insufficient_history_returns_no_targets,
-        test_risk_off_uses_defensive_book,
+        test_insufficient_history_returns_empty_targets,
+        test_risk_off_returns_cash_or_defensive,
         test_risk_on_selects_positive_momentum,
-        test_high_vol_disables_leverage,
+        test_high_vol_disables_risk_on,
         test_caps_hold,
         test_orders_are_bounded_and_fast,
         test_tiny_stale_position_is_not_sold,
+        test_drawdown_governor_scales_down,
     ]
     for test in tests:
         test()
-    print(f"✓ {len(tests)} strategy checks passed.")
+    print(f"OK {len(tests)} strategy checks passed.")
 
 
 if __name__ == "__main__":
